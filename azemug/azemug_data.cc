@@ -67,8 +67,8 @@ int Azemug_data::open_table(char *path)
 
 long long Azemug_data::write_row(uchar *buf, int length)
 {
-    
-    DBUG_ENTER("Azemug_data::write_row");	    
+
+    DBUG_ENTER("Azemug_data::write_row");
 
     long long pos;
     int i;
@@ -86,6 +86,15 @@ long long Azemug_data::write_row(uchar *buf, int length)
      Note: my_malloc takes a size of memory to be allocated,
      MySQL flags (set to zero fill and with extra error checking).
      Returns number of uchars allocated -- <= 0 indicates an error.
+    */
+
+    i = my_write(data_file, &deleted, sizeof(uchar), MYF(0));
+    memcpy(&len, &length, sizeof(int));
+    i = my_write(data_file, (uchar *)&len, sizeof(int), MYF(0));
+
+    /*
+    Write row data to the file. Return new file pointer or
+    return -1 if error from my_write().
     */
 
     i = my_write(data_file, buf, length, MYF(0));
@@ -263,7 +272,7 @@ int Azemug_data::read_row(uchar *buf, int length, long long position)
 
     if(pos != -1L)
     {
-        i = my_read(data_file, &deteled, sizeof(uchar), MYF(0));
+        i = my_read(data_file, &deleted, sizeof(uchar), MYF(0));
 
         /*
          If not deleted (deleted == 0), read the record length then read the row.
