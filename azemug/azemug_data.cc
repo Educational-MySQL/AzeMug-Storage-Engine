@@ -67,6 +67,9 @@ int Azemug_data::open_table(char *path)
 
 long long Azemug_data::write_row(uchar *buf, int length)
 {
+    
+    DBUG_ENTER("Azemug_data::write_row");	    
+
     long long pos;
     int i;
     int len;
@@ -232,7 +235,7 @@ int Azemug_data::delete_row(uchar *old_rec, int length, long long position)
           at the current file pointer.
           Note: my_write() returns the uchars written or -1 on error
         */
-        pos = my_seel(data_file, pos, MY_SEEK_SET, MYF(0));
+        pos = my_seek(data_file, pos, MY_SEEK_SET, MYF(0));
         i = my_write(data_file, &deleted, sizeof(uchar), MYF(0));
         i = (i > 1) ? 0 : i;
     }
@@ -246,7 +249,7 @@ int Azemug_data::read_row(uchar *buf, int length, long long position)
     int i;
     int rec_len;
     long long pos;
-    uchar deteled = 2;
+    uchar deleted = 2;
 
     DBUG_ENTER("Azemug_data::read_row");
     if(position <= 0)
@@ -346,6 +349,8 @@ int Azemug_data::read_header()
 
 int Azemug_data::write_header()
 {
+    int i;
+
     DBUG_ENTER("Azemug_data::write_header");
     if (number_records != -1)
     {
