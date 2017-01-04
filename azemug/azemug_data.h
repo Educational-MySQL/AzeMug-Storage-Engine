@@ -3,7 +3,7 @@
 //
 
 /*
-  Spartan_data.h
+  Azemug_data.h
 
   This header defines a simple data file class for reading raw data to and
   from disk. The data written is in byte format so it can be anything you
@@ -14,7 +14,7 @@
 #include "my_global.h"
 #include "my_sys.h"
 
-class Azemug_data:
+class Azemug_data
 {
 public:
     Azemug_data(void);
