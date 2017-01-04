@@ -13,6 +13,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
 
-SET(EXAMPLE_PLUGIN_DYNAMIC "ha_example")
-SET(EXAMPLE_SOURCES ha_azemug.cc)
-MYSQL_ADD_PLUGIN(example ${EXAMPLE_SOURCES} STORAGE_ENGINE MODULE_ONLY)
+SET(AZEMUG_PLUGIN_STATIC "azemug")
+SET(AZEMUG_PLUGIN_DYNAMIC "azemug")
+SET(AZEMUG_SOURCES ha_azemug.cc ha_azemug.h azemug_data.cc azemug_data.h)
+MYSQL_ADD_PLUGIN(azemug ${AZEMUG_SOURCES} STORAGE_ENGINE MODULE_ONLY)
