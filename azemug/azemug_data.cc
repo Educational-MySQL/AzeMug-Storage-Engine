@@ -334,7 +334,7 @@ int Azemug_data::del_records()
 
 int Azemug_data::read_header()
 {
-    int i;
+    int i __attribute__ ((unused));
     int len;
 
     DBUG_ENTER("Azemug_data::read_header");
@@ -358,7 +358,7 @@ int Azemug_data::read_header()
 
 int Azemug_data::write_header()
 {
-    int i;
+    int i __attribute__ ((unused));
 
     DBUG_ENTER("Azemug_data::write_header");
     if (number_records != -1)
