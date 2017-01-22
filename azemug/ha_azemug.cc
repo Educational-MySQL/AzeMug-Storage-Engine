@@ -92,6 +92,7 @@
 #include "ha_azemug.h"
 #include "probes_mysql.h"
 #include "sql_plugin.h"
+#include "my_sys.h"
 
 static handler *azemug_create_handler(handlerton *hton,
                                        TABLE_SHARE *table, 
@@ -127,6 +128,7 @@ Azemug_share::Azemug_share()
   thr_lock_init(&lock);
   mysql_mutex_init(ex_key_mutex_Azemug_share_mutex,
                    &mutex, MY_MUTEX_INIT_FAST);
+  data_class = new Azemug_data();
 }
 
 
@@ -208,7 +210,12 @@ ha_azemug::ha_azemug(handlerton *hton, TABLE_SHARE *table_arg)
   delete_table method in handler.cc
 */
 
+#define AZE_EXT ".aze"
+#define AZI_EXT ".azi"
+
 static const char *ha_azemug_exts[] = {
+  AZE_EXT,
+  AZI_EXT,
   NullS
 };
 
@@ -296,9 +303,16 @@ static bool azemug_is_supported_system_table(const char *db,
 int ha_azemug::open(const char *name, int mode, uint test_if_locked)
 {
   DBUG_ENTER("ha_azemug::open");
+  char name_buff[FN_REFLEN];
 
   if (!(share = get_share()))
     DBUG_RETURN(1);
+  /*
+   Call the data class open table method.
+   Note: the fn_format() method correctly creates a file name from the names passed into the method.
+   */
+  share->data_class->open_table(fn_format(name_buff, name, "", AZE_EXT,
+                                           MY_REPLACE_EXT|MY_UNPACK_FILENAME));
   thr_lock_data_init(&share->lock,&lock,NULL);
 
   DBUG_RETURN(0);
@@ -832,7 +846,16 @@ THR_LOCK_DATA **ha_azemug::store_lock(THD *thd,
 int ha_azemug::delete_table(const char *name)
 {
   DBUG_ENTER("ha_azemug::delete_table");
-  /* This is not implemented but we want someone to be able that it works. */
+  char name_buff[FN_REFLEN];
+  /*
+   Call the mysql delete file method.
+   Note: the fn_format() method correctly creates a file name from
+   the name passed into method.
+   */
+
+   my_delete(fn_format(name_buff, name, "", AZE_EXT,
+                       MY_REPLACE_EXT|MY_UNPACK_FILENAME), MYF(0));
+
   DBUG_RETURN(0);
 }
 
@@ -854,6 +877,17 @@ int ha_azemug::delete_table(const char *name)
 int ha_azemug::rename_table(const char * from, const char * to)
 {
   DBUG_ENTER("ha_azemug::rename_table ");
+  char data_from[FN_REFLEN]; // FN_REFLEN = max length of path
+  char data_to[FN_REFLEN];
+
+  my_copy(fn_format(data_from, from, "", AZE_EXT,
+                    MY_REPLACE_EXT|MY_UNPACK_FILENAME),
+          fn_format(data_to, to, "", AZE_EXT,
+                     MY_REPLACE_EXT|MY_UNPACK_FILENAME), MYF(0));
+  /*
+   Delete the file using MySQL's delete file method.
+   */
+  my_delete(data_from, MYF(0));
   DBUG_RETURN(HA_ERR_WRONG_COMMAND);
 }
 
@@ -902,10 +936,24 @@ int ha_azemug::create(const char *name, TABLE *table_arg,
                        HA_CREATE_INFO *create_info)
 {
   DBUG_ENTER("ha_azemug::create");
+  char name_buff[FN_REFLEN];
+
+  if(!(share = get_share()))
+      DBUG_RETURN(1);
+
   /*
-    This is not implemented but we want someone to be able to see that it
-    works.
-  */
+   Call the data class create table method.
+   Note: the fn_format() method correctly creates a file from the name passed into the method.
+   */
+  if(share->data_class->create_table(fn_format(name_buff, name, "", AZE_EXT,
+                                                MY_REPLACE_EXT|MY_UNPACK_FILENAME)))
+  {
+        DBUG_RETURN(-1);
+  }
+
+  share->data_class->close_table();
+
+
   DBUG_RETURN(0);
 }
 

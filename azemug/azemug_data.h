@@ -14,6 +14,7 @@
 #include "my_global.h"
 #include "my_sys.h"
 
+
 class Azemug_data
 {
 public:

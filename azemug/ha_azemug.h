@@ -35,7 +35,8 @@
 #include "thr_lock.h"                    /* THR_LOCK, THR_LOCK_DATA */
 #include "handler.h"                     /* handler */
 #include "my_base.h"                     /* ha_rows */
-#include "azemug_data.h"                 /* */ 
+#include "azemug_data.h"                 /* */
+#include "my_sys.h"
 
 /** @brief
   Azemug_share is a class that will be shared among all open handlers.
@@ -45,11 +46,15 @@ class Azemug_share : public Handler_share {
 public:
   mysql_mutex_t mutex;
   THR_LOCK lock;
+  Azemug_data *data_class;
   Azemug_share();
   ~Azemug_share()
   {
     thr_lock_delete(&lock);
     mysql_mutex_destroy(&mutex);
+    if(data_class != NULL)
+        delete data_class;
+    data_class = NULL;
   }
 };
 
